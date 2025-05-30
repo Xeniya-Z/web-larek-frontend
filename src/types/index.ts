@@ -1,5 +1,7 @@
 // Интерфейс для данных карточки товара, получаемых с API
-interface IProductData {
+import { IEvents } from "../components/base/events";
+
+export interface IProductData {
   id: string;
   description: string;
   image: string;
@@ -9,95 +11,54 @@ interface IProductData {
 };
 
 // Интерфейс для данных клиента
-interface IClientData {
-  payment: 'cash' | 'online';
+export interface IClientData {
+  payment: 'card' | 'cash' | '';
   email: string;
   phone: string;
   address: string;
 };
 
 // интерфейс данных уходящих при отправке заказа
-interface IOrderData {
+export interface IOrderData {
   items: string[];
   clientData: IClientData;
   total: number;
 };
 
 // Интерфейс для положительного ответа от API при оформлении заказа
-interface IOrderResult {
+export interface IOrderResult {
   id: string;
   total: number;
 };
 
 // интерфейс для ошибки заказа приходящей с API при оформлении заказа
-interface IOrderError {
+export interface IOrderError {
  error: string;
 };
 
-// интерфейс API клиента
-interface IProductsAPI {
-  getProducts: () => Promise<IProductData[]>;
-  orderProducts: (order: IOrderData) => Promise<IOrderResult>;
-};
-
 // интерфейс для карточки (для работы на странице)
-interface IProduct {
+export interface IProduct {
   id: string;
   description: string;
   image: string;
   title: string;
   category: string;
-  price: string;
-};
-
-// интерфейс приложения в целом
-interface IAppState {
-  catalog: IProduct[];
-  basket: IBasketModel;
-  preview: string | null;
-  order: IOrderData | null;
-};
-
-// интерфейс для открытия карточек с товаром
-interface ICardActions {
-  onClick: (event: MouseEvent) => void;
-};
-
-// интерфейс модели для управления списком товаров
-interface IProductsModel {
-  items: IProduct[];
-  setItems: (items: IProduct[]) => void;
-  getItem: (id: string) => Promise<IProduct>;
-};
-
-// интерфейс модели корзины
-interface IBasketModel {
-  items: Set<string>;
-  addItem(id: string): void;
-  removeItem(id: string): void;
-  getTotalPrice(): number;
-};
-
-// интерфейс для базового отображения (для абстрактного класса)
-interface IView<T> {
-  element: HTMLElement;
-  copy(): IView<T>;
-  render(data?: T): HTMLElement;
-};
-
-// интерфейс для базового конструктора отображения
-interface IViewConstructor<T, S> {
-  new (root: HTMLElement, settings: S): IView<T>;
+  priceText: string;  // цена уже подготовлена для отображения
+  priceValue: number | null; // цена в виде числа (для расчетов)
 };
 
 // интерфейс отображения страницы
-interface IPage {
+export interface IPage {
   counter: number;
   catalog: HTMLElement[];
+  locked: boolean;
 };
 
-// интерфейс отображения корзины
-interface IBasketView {
-  items: HTMLElement[];
-  total: number;
+export interface IFormErrors {
+  formErrors: Partial<Record<keyof IOrderData, string>>;
+  order: IOrderData;
+};
+
+export interface IViewSettings {
+  events: IEvents;
 };
