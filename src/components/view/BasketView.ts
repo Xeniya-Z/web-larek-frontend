@@ -1,6 +1,7 @@
 import { View } from "../base/View";
 import { IViewSettings } from "../../types";
 import { createElement, ensureElement } from "../../utils/utils";
+import { EventNames } from "../../utils/eventNames";
 
 export interface IBasketView {
   items: HTMLElement[];
@@ -22,7 +23,7 @@ export class BasketView extends View<IViewSettings, IBasketView> {
         if (this._button) {
             this.setDisabled(this._button, true);
             this._button.addEventListener('click', () => {
-                settings.events.emit('order:open');
+                settings.events.emit(EventNames.OrderOpen);
             });
         }
         this.items = [];

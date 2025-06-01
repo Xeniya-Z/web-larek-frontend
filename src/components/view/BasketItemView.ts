@@ -1,6 +1,7 @@
 import { View } from "../base/View";
 import { IViewSettings } from "../../types";
 import { ensureElement } from "../../utils/utils";
+import { EventNames } from "../../utils/eventNames";
 
 interface IBasketItemView {
   id: string;
@@ -24,7 +25,7 @@ export class BasketItemView extends View<IViewSettings, IBasketItemView> {
 
     this.setupListeners(() => {
       this._deleteButton.addEventListener('click', () => {
-        this.settings.events.emit('basket:remove', { id: this.data?.id });
+        this.settings.events.emit(EventNames.BasketRemove, { id: this.data?.id });
       });
     });
   }

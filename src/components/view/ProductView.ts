@@ -1,6 +1,7 @@
 import { View } from "../base/View";
 import { IProduct, IViewSettings } from "../../types";
 import { ensureElement, cloneTemplate } from "../../utils/utils";
+import { EventNames } from "../../utils/eventNames";
 
 export class ProductView extends View<IViewSettings, IProduct> {
 
@@ -22,16 +23,16 @@ export class ProductView extends View<IViewSettings, IProduct> {
     this.render(product);
 
     this.element.addEventListener('click', () => {
-      this.settings.events.emit('product:select', { id: product.id });
+      this.settings.events.emit(EventNames.ProductSelect, { id: product.id });
     });
   }
 
   render(data: IProduct): HTMLElement {
-    this._title.textContent = data.title;
+    this.setText(this._title, data.title);
     this._image.src = data.image;
     this._image.alt = data.title;
-    this._price.textContent = data.priceText;
-    this._category.textContent = data.category;
+    this.setText(this._price, data.priceText);
+    this.setText(this._category, data.category);
     this.element.dataset.id = data.id;
 
     return this.element;

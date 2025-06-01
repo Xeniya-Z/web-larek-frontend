@@ -1,6 +1,7 @@
 import { View } from "../base/View";
 import { IProduct, IViewSettings } from "../../types";
 import { ensureElement, cloneTemplate } from "../../utils/utils";
+import { EventNames } from "../../utils/eventNames";
 
 export class ProductPreview extends View<IViewSettings, IProduct> {
   protected _title: HTMLElement;
@@ -26,17 +27,17 @@ export class ProductPreview extends View<IViewSettings, IProduct> {
     this.render(product);
 
     this._button.addEventListener('click', () => {
-      this.settings.events.emit('basket:add', { id: product.id });
+      this.settings.events.emit(EventNames.BasketAdd, { id: product.id });
     });
   }
 
   render(data: IProduct): HTMLElement {
-    this._title.textContent = data.title;
+    this.setText(this._title, data.title);
     this._image.src = data.image;
     this._image.alt = data.title;
-    this._category.textContent = data.category;
-    this._description.textContent = data.description;
-    this._price.textContent = data.priceText;
+    this.setText(this._category, data.category);
+    this.setText(this._description, data.description);
+    this.setText(this._price, data.priceText);
 
     return this.element;
   }
@@ -46,7 +47,7 @@ export class ProductPreview extends View<IViewSettings, IProduct> {
   }
 
   public disableButton(titleText: string) {
-    this._button.disabled = true;
+    this.setDisabled(this._button, true);
     this._button.title = titleText;
   }
 }

@@ -1,17 +1,14 @@
 import { Model } from "../base/model";
-import { IClientData, IFormErrors, IOrderData } from "../../types";
+import { IClientData, IFormErrors } from "../../types";
 import { IEvents } from "../base/events";
+import { EventNames } from "../../utils/eventNames";
 
 export class FormErrors extends Model<IFormErrors> {
-  order: IOrderData = {
-    items: [],
-    total: 0,
-    clientData: {
-      email: '',
-      phone: '',
-      address: '',
-      payment: ''
-    }
+  clientData: IClientData = {
+    payment: '',
+    email: '',
+    phone: '',
+    address: ''
   };
 
   formErrors: Partial<Record<keyof IClientData, string>> = {};
@@ -23,26 +20,26 @@ export class FormErrors extends Model<IFormErrors> {
   validateOrder(): boolean {
     const errors: Partial<Record<keyof IClientData, string>> = {};
 
-    if (!this.order.clientData.email) {
+    if (!this.clientData.email) {
       errors.email = 'Необходимо указать email';
     }
 
-    if (!this.order.clientData.phone) {
+    if (!this.clientData.phone) {
       errors.phone = 'Необходимо указать телефон';
     }
 
-    if (!this.order.clientData.address) {
+    if (!this.clientData.address) {
       errors.address = 'Необходимо указать адрес';
     }
 
     this.formErrors = errors;
-    this.events.emit('formErrors:change', this.formErrors);
+    this.events.emit(EventNames.FormErrorsChange, this.formErrors);
 
     return Object.keys(errors).length === 0;
   }
 
   clearErrors(): void {
     this.formErrors = {};
-    this.events.emit('formErrors:change', this.formErrors);
+    this.events.emit(EventNames.FormErrorsChange, this.formErrors);
   }
 }

@@ -12,8 +12,9 @@ import { ProductView } from './components/view/ProductView';
 import { ProductPreview } from './components/view/ProductPreview';
 import { Success } from './components/view/Success';
 import { ensureElement, cloneTemplate } from './utils/utils';
+import { EventNames } from './utils/eventNames';
 import { AppState } from './components/AppState';
-import { IProduct, IClientData } from "./types/index";
+import { IProduct, IClientData, IOrderResult, IOrderError } from "./types/index";
 
 //шаблоны
 const pageContainer = ensureElement<HTMLElement>('.page');
@@ -50,7 +51,7 @@ const successView = new Success(successElement, {
 // чтобы мониторить все события, для отладки
 events.onAll(({ eventName, data }) => {
   console.log(eventName, data);
-})
+});
 
 // загружаем товары с апи
 api.getProductList()
@@ -63,7 +64,7 @@ api.getProductList()
 });
 
 // обновляем каталог на странице при изменении списка товаров
-events.on('items:changed', (data: {items: IProduct[]}) => {
+events.on(EventNames.ItemsChanged, (data: {items: IProduct[]}) => {
   const productViews = data.items.map(item => new ProductView(item, { events }));
   const productElements = productViews.map(view => view.getElement());
 
@@ -74,7 +75,7 @@ events.on('items:changed', (data: {items: IProduct[]}) => {
 });
 
 // открываем карточку товара в модальном окне при его выборе(превью)
-events.on('product:select', async (data: { id: string }) => {
+events.on(EventNames.ProductSelect, async (data: { id: string }) => {
   try {
     const product = await app.getItem(data.id);
     const isInBasket = app.basket.items.has(product.id);
@@ -93,24 +94,24 @@ events.on('product:select', async (data: { id: string }) => {
 });
 
 // добавляем товар в корзину по его id
-events.on('basket:add', (data: { id: string }) => {
+events.on(EventNames.BasketAdd, (data: { id: string }) => {
   app.basket.addItem(data.id);
 });
 
 // обновляем counter на странице и закрываем модальное окно
-events.on('basket:itemAdded', (data: { id: string }) => {
+events.on(EventNames.BasketItemAdded, (data: { id: string }) => {
   page.counter = app.basket.items.size;
 
   modal.close();
 });
 
 // обновляем counter после удаления из корзины
-events.on('basket:itemRemoved', () => {
+events.on(EventNames.BasketItemRemoved, () => {
   page.counter = app.basket.items.size;
 });
 
 // открываем корзину: очищаем список и добавляем элементы товаров из корзины(отрисовка)
-events.on('bids:open', async () => {
+events.on(EventNames.BidsOpen, async () => {
   basketList.innerHTML = '';
   
   const itemsElements = Array.from(app.basket.items).map((itemId, index) => {
@@ -142,14 +143,14 @@ events.on('bids:open', async () => {
 });
 
 // удаляем товар
-events.on('basket:remove', (data: { id: string }) => {
+events.on(EventNames.BasketRemove, (data: { id: string }) => {
   app.basket.removeItem(data.id);
-  events.emit('bids:open');
+  events.emit(EventNames.BidsOpen);
 });
 
 // оформление заказа: шаг 1
 // открываем первую форму оформления заказа
-events.on('order:open', () => {
+events.on(EventNames.OrderOpen, () => {
   if (app.basket.items.size === 0) {
     return;
   }
@@ -157,12 +158,12 @@ events.on('order:open', () => {
 });
 
 // подписываемся на изменение ошибок
-events.on('formErrors:change', (errors) => {
+events.on(EventNames.FormErrorsChange, (errors) => {
 	orderFormView.errors = errors;
 });
 
 // событие выбора адреса
-events.on('order.address:change', (data: { field: string; value: string }) => {
+events.on(EventNames.OrderAddressChange, (data: { field: string; value: string }) => {
 	app.order.clientData.address = data.value;
 	const isValid = app.order.validateStepOne();
 	orderFormView.valid = isValid;
@@ -171,7 +172,7 @@ events.on('order.address:change', (data: { field: string; value: string }) => {
 });
 
 // событие выбор оплаты
-events.on('order.payment:change', (data: { field: string; value: 'card' | 'cash' }) => {
+events.on(EventNames.OrderPaymentChange, (data: { field: string; value: 'card' | 'cash' }) => {
 	app.order.clientData.payment = data.value;
 	const isValid = app.order.validateStepOne();
 	orderFormView.valid = isValid;
@@ -181,7 +182,7 @@ events.on('order.payment:change', (data: { field: string; value: 'card' | 'cash'
 
 // оформление заказа: шаг 2
 // открываем вторую форму оформления заказа
-events.on('order:submit', () => {
+events.on(EventNames.OrderSubmit, () => {
   if (app.order.validateStepOne()) {
     // Рендерим второй шаг, передаём в него clientData
     modal.render({
@@ -196,22 +197,22 @@ events.on('order:submit', () => {
 });
 
 // событие выбор телефона
-events.on('contacts.phone:change', (data: {field: string, value: string}) => {
+events.on(EventNames.ContactsPhoneChange, (data: {field: string, value: string}) => {
   app.order.clientData.phone = data.value;
   orderFormViewTwo.valid = app.order.validateStepTwo();
   orderFormViewTwo.errors = { phone: app.order.formErrors.phone ?? '' };
 });
 
 // событие выбора имейла
-events.on('contacts.email:change', (data: {field: string, value: string}) => {
+events.on(EventNames.ContactsEmailChange, (data: {field: string, value: string}) => {
   app.order.clientData.email = data.value;
   orderFormViewTwo.valid = app.order.validateStepTwo();
 
   orderFormViewTwo.errors = { email: app.order.formErrors.email ?? '' };
 });
 
-// подтверждаем контактные данные, формируем заказ для последующей отправки данных
-events.on('contacts:submit', () => {
+// подтверждаем контактные данные, формируем заказ и отправляем
+events.on(EventNames.ContactsSubmit, async () => {
   if (app.order.validateStepTwo()) {
     const total = app.basket.getTotalPrice(app.items);
     //собираем данные для заказа
@@ -219,11 +220,19 @@ events.on('contacts:submit', () => {
     // получаем собранные данные
     const orderData = app.getOrderData();
 
-    successView.render({ total });
-    modal.render({ content: successElement });
+    try {
+      const orderResult: IOrderResult = await api.orderProducts(orderData);
+      console.log('Заказ создан:', orderResult);
 
-    app.basket.clear();
-    page.counter = 0;
+      successView.render({ total });
+      modal.render({ content: successElement });
+
+      app.basket.clear();
+      page.counter = 0;
+    } catch (error) {
+      const apiError = error as IOrderError;
+      console.error('Ошибка оформления заказа:', apiError.error);
+    }
 
   } else {
     const errors = app.order.formErrors;

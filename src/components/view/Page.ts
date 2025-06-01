@@ -1,6 +1,7 @@
 import { View } from "../base/View";
 import { IViewSettings, IPage } from "../../types";
 import { ensureElement } from "../../utils/utils";
+import { EventNames } from "../../utils/eventNames";
 
 export class Page extends View<IViewSettings, IPage> {
   protected _counter: HTMLElement;
@@ -17,7 +18,7 @@ export class Page extends View<IViewSettings, IPage> {
     this._basket = ensureElement('.header__basket');
 
     this._basket.addEventListener('click', () => {
-      this.settings.events.emit('bids:open');
+      this.settings.events.emit(EventNames.BidsOpen);
     });
   }
 

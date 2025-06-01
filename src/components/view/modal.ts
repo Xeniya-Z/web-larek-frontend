@@ -1,6 +1,7 @@
 import { View } from "../base/View";
 import { IViewSettings } from "../../types";
 import { ensureElement } from "../../utils/utils";
+import { EventNames } from "../../utils/eventNames";
 
 interface IModalData {
     content: HTMLElement;
@@ -25,15 +26,27 @@ export class Modal extends View<IViewSettings, IModalData> {
         this._content.replaceChildren(value);
     }
 
+    _toggleModal(state: boolean = true) {
+        this.toggleClass(this.element, 'modal_active', state);
+    }
+
+    _handleEscape = (evt: KeyboardEvent) => {
+        if (evt.key === 'Escape') {
+            this.close();
+        }
+    };
+
     open() {
-        this.element.classList.add('modal_active');
-        this.settings?.events.emit('modal:open');
+        this._toggleModal();
+        document.addEventListener('keydown', this._handleEscape);
+        this.settings.events.emit(EventNames.ModalOpen);
     }
 
     close() {
-        this.element.classList.remove('modal_active');
+        this._toggleModal(false);
+        document.removeEventListener('keydown', this._handleEscape);
         this.content = null;
-        this.settings?.events.emit('modal:close');
+        this.settings.events.emit(EventNames.ModalClose);
     }
 
     render(data: IModalData): HTMLElement {

@@ -3,6 +3,7 @@ import { BasketModel, IBasketModel } from "./model/BasketModel";
 import { OrderModel, IOrderModel } from "./model/OrderModel";
 import { IProduct, IClientData } from "../types";
 import { IEvents } from "./base/events";
+import { EventNames } from "../utils/eventNames";
 
 interface IAppState {
   items: IProduct[];
@@ -25,7 +26,7 @@ export class AppState extends Model<IAppState> {
 
     setItems (items: IProduct[]) {
         this.items = items;
-        this.emitChanges('items:changed', { items: this.items });
+        this.emitChanges(EventNames.ItemsChanged, { items: this.items });
     }
 
     async getItem(id: string): Promise<IProduct> {
@@ -41,7 +42,7 @@ export class AppState extends Model<IAppState> {
         this.order.clientData = clientData;
         this.order.items = Array.from(this.basket.items);
         this.order.total = this.basket.getTotalPrice(this.items);
-        this.emitChanges('order:changed', this.order);
+        this.emitChanges(EventNames.OrderChanged, this.order);
       }
       
     getOrderData() {

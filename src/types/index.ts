@@ -21,9 +21,12 @@ export interface IClientData {
 // интерфейс данных уходящих при отправке заказа
 export interface IOrderData {
   items: string[];
-  clientData: IClientData;
   total: number;
-};
+  payment: 'card' | 'cash' | '';
+  email: string;
+  phone: string;
+  address: string;
+}
 
 // Интерфейс для положительного ответа от API при оформлении заказа
 export interface IOrderResult {

@@ -1,6 +1,7 @@
 import { Model } from "../base/model";
 import { IProduct } from '../../types/index';
 import { IEvents } from "../base/events";
+import { EventNames } from "../../utils/eventNames";
 
 export interface IBasketModel {
   items: Set<string>;
@@ -24,14 +25,14 @@ export class BasketModel extends Model<IBasketModel> {
   addItem(id: string): void {
     if (!this.items.has(id)) {
       this.items.add(id);
-      this.emitChanges('basket:itemAdded', { id });
+      this.emitChanges(EventNames.BasketItemAdded, { id });
     }
   }
 
   removeItem(id: string): void {
     if (this.items.has(id)) {
       this.items.delete(id);
-      this.emitChanges('basket:itemRemoved', { id });
+      this.emitChanges(EventNames.BasketItemRemoved, { id });
     }
   }
 
@@ -53,7 +54,7 @@ export class BasketModel extends Model<IBasketModel> {
   clear(): void {
     if (this.items.size > 0) {
       this.items.clear();
-      this.emitChanges('basket:changed', {});
+      this.emitChanges(EventNames.BasketChanged, {});
     }
   }
   

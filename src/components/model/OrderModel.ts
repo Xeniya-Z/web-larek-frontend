@@ -70,10 +70,11 @@ export class OrderModel extends Model<IOrderModel>  {
   getOrderData(): IOrderData {
     return {
       items: this.items,
-      clientData: this.clientData,
       total: this.total,
+      payment: this.clientData.payment,
+      email: this.clientData.email,
+      phone: this.clientData.phone,
+      address: this.clientData.address,
     };
   }
 }
-
-

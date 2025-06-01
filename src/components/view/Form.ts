@@ -1,6 +1,7 @@
 import { View } from "../base/View";
 import { IViewSettings } from "../../types";
 import { ensureElement, ensureAllElements } from "../../utils/utils";
+import { EventNames } from "../../utils/eventNames";
 
 interface IFormState {
 	valid: boolean;
@@ -41,10 +42,10 @@ export class Form<T> extends View<IViewSettings, IFormState> {
 			button.addEventListener('click', () => {
 				const selected = button.name as 'cash' | 'card';
 
-				paymentButtons.forEach((btn) => btn.classList.remove('button_alt-active'));
-				button.classList.add('button_alt-active');
+				paymentButtons.forEach((btn) => this.toggleClass(btn, 'button_alt-active', false));
+				this.toggleClass(button, 'button_alt-active', true);
 
-				this.settings.events.emit('order.payment:change', {
+				this.settings.events.emit(EventNames.OrderPaymentChange, {
 					field: 'payment',
 					value: selected,
 				});
@@ -60,12 +61,12 @@ export class Form<T> extends View<IViewSettings, IFormState> {
 	}
 
 	set valid(value: boolean) {
-        this._valid = value;
-		this._submit.disabled = !value;
+    this._valid = value;
+		this.setDisabled(this._submit, !value);
 	}
 
   get valid(): boolean {
-      return this._valid;
+    return this._valid;
   }
 
 	set errors(value: Partial<Record<keyof T, string>>) {
